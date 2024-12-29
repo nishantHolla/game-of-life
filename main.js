@@ -1,5 +1,8 @@
 const DOM_CANVAS = document.querySelector("canvas");
 const DOM_ACTION_BOX = document.querySelector("#action-box");
+const DOM_GENERATION_COUNT = document.querySelector("#generation-count");
+const DOM_POPULATION_COUNT = document.querySelector("#population-count");
+const DOM_PLAY_BUTTON = document.querySelector("#play-button");
 
 const COLOR_CANVAS_BG = [255, 255, 255];
 const COLOR_CANVAS_FG = [0, 0, 0];
@@ -9,7 +12,14 @@ const COLUMNS = 27;
 const ROWS = 15;
 const CELL_SIZE = 60;
 
-let GRID = new Array(COLUMNS);
+const FRAME_RATE = 10
+
+const GAME = {
+  grid: new Array(COLUMNS),
+  generation: 0,
+  population: 0,
+  isPlaying: false
+}
 
 function getCanvasSize() {
   return [COLUMNS * CELL_SIZE, ROWS * CELL_SIZE];
@@ -17,9 +27,9 @@ function getCanvasSize() {
 
 function initGrid(grid) {
   for (let i=0; i<COLUMNS; i++) {
-    GRID[i] = new Array(ROWS);
+    GAME.grid[i] = new Array(ROWS);
     for (let j=0; j<ROWS; j++) {
-      GRID[i][j] = 0;
+      GAME.grid[i][j] = 0;
     }
   }
 }
@@ -43,22 +53,55 @@ function drawCells() {
 
   for (let i=0; i<COLUMNS; i++) {
     for (let j=0; j<ROWS; j++) {
-      if (GRID[i][j]) {
+      if (GAME.grid[i][j]) {
         rect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       }
     }
   }
 }
 
+function updateGeneration() {
+  DOM_GENERATION_COUNT.innerText = `Generation: ${GAME.generation}`;
+}
+
+function updatePopulation() {
+  DOM_POPULATION_COUNT.innerText = `Population: ${GAME.population}`;
+}
+
+function updatePlay(toggle) {
+  if (toggle) {
+    GAME.isPlaying = !GAME.isPlaying;
+  }
+
+  if (GAME.isPlaying) {
+    DOM_PLAY_BUTTON.innerText = "Pause";
+  }
+  else {
+    DOM_PLAY_BUTTON.innerText = "Play";
+  }
+}
+
 function setup() {
+  frameRate(FRAME_RATE);
   createCanvas(...getCanvasSize(), P2D, DOM_CANVAS);
   initGrid();
+  updatePlay(false);
+
+  DOM_PLAY_BUTTON.addEventListener('click', () => {updatePlay(true)})
 }
 
 function draw() {
   background(...COLOR_CANVAS_BG);
+
   drawGrid();
   drawCells();
+
+  updateGeneration();
+  updatePopulation();
+
+  if (GAME.isPlaying) {
+    GAME.generation++;
+  }
 }
 
 function windowResized() {
@@ -69,5 +112,16 @@ function mouseClicked() {
   let col = floor(mouseX / CELL_SIZE);
   let row = floor(mouseY / CELL_SIZE);
 
-  GRID[col][row] = GRID[col][row] === 1 ? 0 : 1;
+  if (col < 0 || row < 0 || GAME.isPlaying || GAME.generation !== 0) {
+    return;
+  }
+
+  if (GAME.grid[col][row]) {
+    GAME.grid[col][row] = 0;
+    GAME.population--;
+  }
+  else {
+    GAME.grid[col][row] = 1;
+    GAME.population++;
+  }
 }
