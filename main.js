@@ -3,19 +3,20 @@ const DOM_ACTION_BOX = document.querySelector("#action-box");
 const DOM_GENERATION_COUNT = document.querySelector("#generation-count");
 const DOM_POPULATION_COUNT = document.querySelector("#population-count");
 const DOM_PLAY_BUTTON = document.querySelector("#play-button");
+const DOM_RESET_BUTTON = document.querySelector("#reset-button");
 
 const COLOR_CANVAS_BG = [255, 255, 255];
 const COLOR_CANVAS_FG = [0, 0, 0];
 const COLOR_CELL_ALIVE = [0, 0, 0];
 
-const COLUMNS = 27;
-const ROWS = 15;
-const CELL_SIZE = 60;
+const COLUMNS = 63;
+const ROWS = 33;
+const CELL_SIZE = 30;
 
 const FRAME_RATE = 10
 
 const GAME = {
-  grid: new Array(COLUMNS),
+  grid: null,
   generation: 0,
   population: 0,
   isPlaying: false
@@ -25,18 +26,21 @@ function getCanvasSize() {
   return [COLUMNS * CELL_SIZE, ROWS * CELL_SIZE];
 }
 
-function initGrid(grid) {
+function initGrid() {
+  let grid = new Array(COLUMNS);
   for (let i=0; i<COLUMNS; i++) {
-    GAME.grid[i] = new Array(ROWS);
+    grid[i] = new Array(ROWS);
     for (let j=0; j<ROWS; j++) {
-      GAME.grid[i][j] = 0;
+      grid[i][j] = 0;
     }
   }
+
+  return grid;
 }
 
 function drawGrid() {
   stroke(...COLOR_CANVAS_FG);
-  strokeWeight(4);
+  strokeWeight(1);
 
   for (let i=0; i<COLUMNS + 1; i++) {
     line(CELL_SIZE * i, 0, CELL_SIZE * i, CELL_SIZE * ROWS);
@@ -81,13 +85,62 @@ function updatePlay(toggle) {
   }
 }
 
+function resetGame() {
+  GAME.isPlaying = false;
+  GAME.population = 0;
+  GAME.generation = 0;
+  GAME.grid = initGrid();
+}
+
+function getNeighbourCount(x, y) {
+  let count = 0;
+
+  for (let i=-1; i<2; i++) {
+    for (let j=-1; j<2; j++) {
+      if ((!i && !j) || x+i < 0 || y+j < 0 || x+i >= COLUMNS || y+j >= ROWS) {
+        continue;
+      }
+      if (GAME.grid[x+i][y+j]) {
+        count++;
+      }
+    }
+  }
+
+  return count;
+}
+
+function updateGrid() {
+  let newGrid = initGrid();
+
+  for (let i=0; i<COLUMNS; i++) {
+    for (let j=0; j<ROWS; j++) {
+      let count = getNeighbourCount(i, j);
+      if (GAME.grid[i][j]) {
+        newGrid[i][j] = (count > 3 || count < 2) ? 0 : 1;
+        if (newGrid[i][j] ^ GAME.grid[i][j]) {
+          GAME.population += newGrid[i][j] ? 1 : -1;
+        }
+      }
+      else {
+        newGrid[i][j] = count === 3 ? 1 : 0;
+        if (newGrid[i][j] ^ GAME.grid[i][j]) {
+          GAME.population += newGrid[i][j] ? 1 : -1;
+        }
+      }
+    }
+  }
+
+  GAME.grid = newGrid;
+}
+
 function setup() {
+  GAME.grid = initGrid();
   frameRate(FRAME_RATE);
   createCanvas(...getCanvasSize(), P2D, DOM_CANVAS);
-  initGrid();
   updatePlay(false);
 
   DOM_PLAY_BUTTON.addEventListener('click', () => {updatePlay(true)})
+  DOM_RESET_BUTTON.addEventListener('click', () => {resetGame()})
 }
 
 function draw() {
@@ -100,6 +153,7 @@ function draw() {
   updatePopulation();
 
   if (GAME.isPlaying) {
+    updateGrid();
     GAME.generation++;
   }
 }
