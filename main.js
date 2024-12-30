@@ -4,6 +4,7 @@ const DOM_GENERATION_COUNT = document.querySelector("#generation-count");
 const DOM_POPULATION_COUNT = document.querySelector("#population-count");
 const DOM_PLAY_BUTTON = document.querySelector("#play-button");
 const DOM_RESET_BUTTON = document.querySelector("#reset-button");
+const DOM_SPEED_SLIDER = document.querySelector("#speed-slider");
 
 const COLOR_CANVAS_BG = [255, 255, 255];
 const COLOR_CANVAS_FG = [0, 0, 0];
@@ -13,7 +14,7 @@ const COLUMNS = 63;
 const ROWS = 33;
 const CELL_SIZE = 30;
 
-const FRAME_RATE = 10
+const FRAME_RATE = parseInt(DOM_SPEED_SLIDER.value);
 
 const GAME = {
   grid: null,
@@ -133,14 +134,21 @@ function updateGrid() {
   GAME.grid = newGrid;
 }
 
+function updateFrameRate(value) {
+  if (value > 0 && value < 101) {
+    frameRate(value);
+  }
+}
+
 function setup() {
   GAME.grid = initGrid();
-  frameRate(FRAME_RATE);
   createCanvas(...getCanvasSize(), P2D, DOM_CANVAS);
+  updateFrameRate(FRAME_RATE);
   updatePlay(false);
 
   DOM_PLAY_BUTTON.addEventListener('click', () => {updatePlay(true)})
   DOM_RESET_BUTTON.addEventListener('click', () => {resetGame()})
+  DOM_SPEED_SLIDER.addEventListener('change', (e) => {updateFrameRate(parseInt(e.target.value))})
 }
 
 function draw() {
