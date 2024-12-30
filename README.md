@@ -6,7 +6,7 @@ from one generation to the next based on the following rules:
 
 - Any live cell with fewer than two live neighbors dies.
 - Any live cell with more than three live neighbors dies.
-- Any live cell with two or three neighbors survives.
+- Any live cell with two or three live neighbors survives.
 - Any dead cell with three live neighbors becomes live.
 
 The neighbors of a cell are the 8 adjacent cell.
