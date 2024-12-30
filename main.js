@@ -5,11 +5,15 @@ const DOM_POPULATION_COUNT = document.querySelector("#population-count");
 const DOM_PLAY_BUTTON = document.querySelector("#play-button");
 const DOM_RESET_BUTTON = document.querySelector("#reset-button");
 const DOM_SPEED_SLIDER = document.querySelector("#speed-slider");
+const DOM_SAVE_TO_FILE = document.querySelector("#save-to-file-button");
+const DOM_LOAD_FROM_FILE = document.querySelector("#load-from-file-button");
+const DOM_LOAD_FROM_FILE_INPUT = document.querySelector("#load-from-file-input");
 
 const COLOR_CANVAS_BG = [255, 255, 255];
 const COLOR_CANVAS_FG = [0, 0, 0];
 const COLOR_CELL_ALIVE = [0, 0, 0];
 
+const BASE = 5;
 const COLUMNS = 63;
 const ROWS = 33;
 const CELL_SIZE = 30;
@@ -140,6 +144,79 @@ function updateFrameRate(value) {
   }
 }
 
+function saveToFile() {
+  let text = `${GAME.generation} ${GAME.population}\n`;
+
+  let count = 0;
+  let buffer = '';
+
+  for (let i=0; i<ROWS; i++) {
+    for (let j=0; j<COLUMNS; j++) {
+      count++;
+      buffer += String(GAME.grid[j][i]);
+      if (count == BASE) {
+        text += parseInt(buffer, 2).toString(Math.pow(2, BASE));
+        count = 0;
+        buffer = '';
+      }
+    }
+  }
+
+  const blob = new Blob([text], { type: 'text/plain' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `GameOfLife-${Date.now()}.txt`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function loadFromString(content) {
+  const line1 = content[0].split(' ');
+  const generation = parseInt(line1[0]);
+  const population = parseInt(line1[1]);
+  const state = content[1];
+
+  if (isNaN(generation) || isNaN(population) || !state || state.length != 415) {
+    alert("File format is incorrect");
+  }
+  else {
+    GAME.population = population;
+    GAME.generation = generation;
+  }
+
+  let row = 0;
+  let col = 0;
+
+  for (let i=0; i<state.length; i++) {
+    let binaryString = parseInt(state[i], Math.pow(2, BASE)).toString(2);
+    while (binaryString.length < BASE) {
+      binaryString = '0' + binaryString;
+    }
+    for (let j=0; j<BASE; j++) {
+      GAME.grid[col][row] = parseInt(binaryString[j]);
+      col++;
+      if (col == COLUMNS) {
+        row++;
+        col = 0;
+      }
+    }
+  }
+
+}
+
+function loadFromFile(file) {
+  if (!file) {
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const content = e.target.result.split('\n');
+    loadFromString(content);
+  }
+  reader.readAsText(file);
+}
+
 function setup() {
   GAME.grid = initGrid();
   createCanvas(...getCanvasSize(), P2D, DOM_CANVAS);
@@ -149,6 +226,11 @@ function setup() {
   DOM_PLAY_BUTTON.addEventListener('click', () => {updatePlay(true)})
   DOM_RESET_BUTTON.addEventListener('click', () => {resetGame()})
   DOM_SPEED_SLIDER.addEventListener('change', (e) => {updateFrameRate(parseInt(e.target.value))})
+  DOM_SAVE_TO_FILE.addEventListener('click', () => {saveToFile()})
+  DOM_LOAD_FROM_FILE.addEventListener('click', () => {DOM_LOAD_FROM_FILE_INPUT.click()})
+  DOM_LOAD_FROM_FILE_INPUT.addEventListener('change', (e) => {
+    loadFromFile(e.target.files[0])}
+  )
 }
 
 function draw() {
