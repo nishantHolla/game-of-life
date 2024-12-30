@@ -7,16 +7,27 @@
   </head>
   <body>
     <div id="action-box">
+      <h1>Conway&apos;s Game Of Life</h1>
       <div id="generation-count"></div>
       <div id="population-count"></div>
       <button type="button" id="play-button">Play</button>
       <button type="button" id="reset-button">Reset</button>
       <div>
-        Speed: <input type="number" min="1" max="100" value="10" id="speed-slider" />
+        Speed: <input type="number" min="1" max="100" value="20" id="speed-slider" />
       </div>
       <button type="button" id="save-to-file-button">Save to file</button>
       <input type="file" id="load-from-file-input" style="display: none;" />
       <button type="button" id="load-from-file-button">Load from file</button>
+      <div>
+        <span>Premade: </span>
+        <select id="premade-select">
+          <option value="default" selected>Slect</option>
+          <option value="4_8_12_diamond">4 8 12 diamond</option>
+          <option value="119P4H1V0">119P4H1V0</option>
+          <option value="ak_94">AK 94</option>
+          <option value="gosper_glider_gun">Gosper Glider Gun</option>
+        </select>
+      </div>
     </div>
     <canvas></canvas>
     <script src="main.js"></script>

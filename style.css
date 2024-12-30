@@ -10,13 +10,18 @@ body {
 }
 
 #action-box {
-  height: 50px;
+  height: min-content;
   display: flex;
   gap: 20px;
   align-items: center;
   font-size: 20px;
   font-family: sans-serif;
-  padding: 0px 5px;
+  padding: 5px;
+  flex-flow: row wrap;
+}
+
+h1 {
+  font-size: 1.4rem;
 }
 
 button {
