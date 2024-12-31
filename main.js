@@ -103,6 +103,10 @@ function resetGame() {
   GAME.population = 0;
   GAME.generation = 0;
   GAME.grid = initGrid();
+
+  updatePlay();
+  updateGeneration();
+  updateGrid();
 }
 
 function getNeighbourCount(x, y) {
@@ -230,6 +234,7 @@ function loadPremade(name) {
     return;
   }
 
+  resetGame();
   loadFromString(PREMADE[name]);
 }
 
